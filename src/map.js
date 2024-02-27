@@ -12,7 +12,7 @@ const save = async ( fpath, map ) => {
     await writeFile(fpath, data);
   } catch (e) {
     console.error( 'Error saving Map to file' );
-    console.error( err );
+    console.error( e );
   }
 }
 
@@ -28,7 +28,7 @@ const load = async fpath => {
     return new Map(JSON.parse(raw));
   } catch (e) {
     console.error( 'Error loading Map from file' );
-    console.error( err );
+    console.error( e );
   }
 };
 

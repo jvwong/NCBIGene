@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 # Read the CSV file into a pandas DataFrame
-data = pd.read_csv('/Users/jeffreywong/Projects/work/NCBIGene/results/adj_symbols.csv', header=0, index_col=0, sep='\t')
+data = pd.read_csv('/Users/jeffreywong/Projects/work/NCBIGene/results/adj.csv', header=0, index_col=0, sep=',')
 
 # Create the heatmap using seaborn with log scale colormap and gridlines
 plt.figure(figsize=(12, 10))

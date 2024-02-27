@@ -8,6 +8,8 @@ import { parse } from 'csv-parse';
 import { finished } from 'stream/promises';
 
 import { save, load } from './map.js';
+import { save as strSave } from './string.js';
+import Graph from './graph.js';
 
 const SOURCE_DIR = 'sources';
 const RESULTS_DIR = 'results';
@@ -16,26 +18,28 @@ const GENE_INFO_PATH = path.join(SOURCE_DIR, GENE_INFO_FILE);
 const FILTERED_GENE_INFO_FILE = 'gene_info_filtered.txt';
 const FILTERED_GENE_INFO_PATH = path.join(SOURCE_DIR, FILTERED_GENE_INFO_FILE);
 const NAMES_MAP_FILE = 'names_map.json';
-const NAMES_MAP_PATH = path.join(SOURCE_DIR, NAMES_MAP_FILE);
+const NAMES_MAP_PATH = path.join(RESULTS_DIR, NAMES_MAP_FILE);
+const ADJ_CSV_FILE = 'adj.csv';
+const ADJ_CSV_FILE_PATH = path.join(RESULTS_DIR, ADJ_CSV_FILE);
 
 const NODE_DELIMITER = '\t';
 
+const supportedTaxIds = new Set([
+  '562',    // 0 - Escherichia coli
+  '3702',   // 1 - Arabidopsis thaliana
+  '4932',   // 2 - Saccharomyces cerevisiae
+  '6239',   // 3 - Caenorhabditis elegans
+  '7227',   // 4 - Drosophila melanogaster
+  '7955',   // 5 - Danio rerio
+  '9606',   // 6 - human
+  '10090',  // 7 - mouse
+  '10116',  // 8 - rat
+  '227984', // 9 - SARS coronavirus Tor2
+  '2697049' // 10 - Severe acute respiratory syndrome coronavirus 2
+]);
 
 // Filter the CSV file
 const filterFile = async () => {
-  const supportedTaxIds = new Set([
-    '562',    // 0 - Escherichia coli
-    '3702',   // 1 - Arabidopsis thaliana
-    '4932',   // 2 - Saccharomyces cerevisiae
-    '6239',   // 3 - Caenorhabditis elegans
-    '7227',   // 4 - Drosophila melanogaster
-    '7955',   // 5 - Danio rerio
-    '9606',   // 6 - human
-    '10090',  // 7 - mouse
-    '10116',  // 8 - rat
-    '227984', // 9 - SARS coronavirus Tor2
-    '2697049' // 10 - Severe acute respiratory syndrome coronavirus 2
-  ]);
   const isSupportedOrganism = taxId => supportedTaxIds.has(taxId);
   const includeEntry = entryLine => {
     // assume org is first tab-delimited entry
@@ -87,7 +91,7 @@ const toNameMap = async () => {
       NA_FULL_NAME: 'Full_name_from_nomenclature_authority',
       OTHER_DESIGNATORS: 'Other_designations'
     });
-    const sanitize = s => s.trim().toLowerCase();
+    const sanitize = s => s.trim().replace(/^'+/, '').replace(/'+$/, '').toLowerCase();
     const EXCLUDED_NAMES = new Set([
       '-',
       'NEWENTRY',
@@ -115,8 +119,9 @@ const toNameMap = async () => {
       nodes[ NODE_NAMES.SYMBOL ],
       nodes[ NODE_NAMES.NA_SYMBOL],
       nodes[ NODE_NAMES.NA_FULL_NAME ]
-    );
-    names = names.filter( isValidValue );
+    )
+    .filter( isValidValue )
+    .map( sanitize );
     names = _.uniq( names );
 
     return { gene_id, tax_id, type_of_gene, names };
@@ -177,15 +182,38 @@ const toNameMap = async () => {
   }
 };
 
+const toGraph = async () => {
+  const adjGraph = new Graph(supportedTaxIds);
+  const namesMap = await load(NAMES_MAP_PATH);
+  const iterator1 = namesMap[Symbol.iterator]();
+  for (const item of iterator1) {
+    const orgList = item[1].map( o => o.tax_id );
+    const orgCounts = _.countBy(orgList);
+    const intraOrgClashes = Object.keys(_.pickBy(orgCounts, v => v > 1));
+    intraOrgClashes.forEach( org => adjGraph.addEdge(org, org) );
+
+    const interOrgClashes = Object.keys(orgCounts);
+    for( let i = 0; i < interOrgClashes.length; i++ ){
+      for( let j = i + 1; j < interOrgClashes.length; j++ ){
+        adjGraph.addEdge(interOrgClashes[i], interOrgClashes[j]);
+      }
+    }
+  }
+  return adjGraph;
+};
 
 async function main() {
   // --------------------      Create nameMap       -------------------------------- //
   // const nameMap = await toNameMap();
   // await save(NAMES_MAP_PATH, nameMap);
 
+  // --------------------      Create adjMatrix     -------------------------------- //
+  // const graph = await toGraph();
+  // await strSave(ADJ_CSV_FILE_PATH, graph.toCsv());
+
   // --------------------      Create clashMap      -------------------------------- //
-  const CLASH_MAP_FILE = 'clash_map.json';
-  const CLASH_MAP_PATH = path.join(SOURCE_DIR, CLASH_MAP_FILE);
+  // const CLASH_MAP_FILE = 'clash_map.json';
+  // const CLASH_MAP_PATH = path.join(RESULTS_DIR, CLASH_MAP_FILE);
   // const clashMap = new Map(
   //   [...nameMap]
   //     .filter(([k, v]) => v.length > 1)
@@ -193,27 +221,26 @@ async function main() {
   // );
   // await save(CLASH_MAP_PATH, clashMap)
 
-  const nameMap = await load(NAMES_MAP_PATH); //615443
-  const clashMap = await load(CLASH_MAP_PATH);//68742
-
-  // --------------------      Create clashMap      -------------------------------- //
-  // const CLASH_MAP_FILE = 'human_mouse_clash_map.json';
-  // const CLASH_MAP_PATH = path.join(SOURCE_DIR, CLASH_MAP_FILE);
+  // --------------------  Create species clashMap  -------------------------------- //
+  // const nameMap = await load(NAMES_MAP_PATH);
+  // const HMR_CLASH_MAP_FILE = 'human_mouse_rat_clash_map.json';
+  // const HMR_CLASH_MAP_PATH = path.join(RESULTS_DIR, HMR_CLASH_MAP_FILE);
   // const tax_ids = [
   //   '9606',
-  //   '10090'
+  //   '10090',
+  //   '10116'
   // ];
   // const clashMap = new Map(
-  //   [...originalMap]
+  //   [...nameMap]
   //     .filter(([k, v]) => {
   //       const orgs = new Set( v.map( o => o.tax_id ) );
   //       return tax_ids.every( tax_id => orgs.has(tax_id) );
   //     })
   //     .sort((a, b) => b[1].length - a[1].length)
   // );
-  // await save(CLASH_MAP_PATH, clashMap)
-  // const humanClashMap = await load(CLASH_MAP_PATH);
-  // console.dir(humanClashMap.get('epididymis secretory sperm binding protein').map( o => o.tax_id ), {'maxArrayLength': null});
+  // await save(HMR_CLASH_MAP_PATH, clashMap);
+  // console.log(clashMap.size); //32 265
+
 
   // Process the clashMap
   // const clashMap = await load(CLASH_MAP_PATH);

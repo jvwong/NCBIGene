@@ -41,6 +41,16 @@ class Graph {
       this.adjacencyMatrix[j][i] = 0;
     }
   }
+
+  toCsv(){
+    const csv = this.adjacencyMatrix
+      .map( item => {
+        var row = item;
+        return row.join(',');
+      })
+      .join('\n');
+    return csv;
+  }
 }
 
 export default Graph;
