@@ -14,9 +14,13 @@
 
 
 # gene_info
-TAXID=10090
-GENEID=[^\s]+
+TAXID=3702
+GENEID=814788
+# [^\s]+
 OUT_DIR=./results/
 
-echo "Searching gene_info for $TAXID"
-grep -Ei "^$TAXID\t" ./sources/gene_info.txt > ${OUT_DIR}${TAXID}_genes.txt
+# echo "Searching gene_info for GENEID: $GENEID"
+grep -Ei "^$TAXID\t$GENEID\t" ./sources/gene_info.txt
+
+# echo "Searching gene_info for TAXID: $TAXID"
+# grep -Ei "^$TAXID\t" ./sources/gene_info_filtered.txt > ${OUT_DIR}${TAXID}_genes.txt
