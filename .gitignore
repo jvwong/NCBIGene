@@ -2,3 +2,5 @@ sources/*
 results/*
 *2pubtator3
 node_modules
+/input/*
+.DS_Store

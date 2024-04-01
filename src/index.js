@@ -241,10 +241,12 @@ async function main() {
   // await save(HMR_CLASH_MAP_PATH, clashMap);
   // console.log(clashMap.size); //32 265
 
-
-  // Process the clashMap
-  // const clashMap = await load(CLASH_MAP_PATH);
-  // // let entries = [...clashMap].map( a => ({ name: a[0], count: a[1].length }));
+  // --------------------  Process the species clashMap  -------------------------- //
+  const clashMap = new Map([
+    ["hsp70",[{"gene_id":"820438","tax_id":"3702"},{"gene_id":"32133","tax_id":"7227"},{"gene_id":"39542","tax_id":"7227"},{"gene_id":"41609","tax_id":"7227"},{"gene_id":"41840","tax_id":"7227"},{"gene_id":"44920","tax_id":"7227"},{"gene_id":"44921","tax_id":"7227"},{"gene_id":"48581","tax_id":"7227"},{"gene_id":"48582","tax_id":"7227"},{"gene_id":"48583","tax_id":"7227"},{"gene_id":"50022","tax_id":"7227"},{"gene_id":"30671","tax_id":"7955"},{"gene_id":"387608","tax_id":"7955"},{"gene_id":"560210","tax_id":"7955"},{"gene_id":"100126123","tax_id":"7955"},{"gene_id":"3303","tax_id":"9606"},{"gene_id":"3308","tax_id":"9606"},{"gene_id":"15511","tax_id":"10090"},{"gene_id":"266759","tax_id":"10116"},{"gene_id":"108348108","tax_id":"10116"}]]
+  ])
+  let entries = clashMap.get('hsp70');
+  //"linkname": "gene_pubmed_highlycited"
   // let subset = [...clashMap].slice(0, 1);
   // console.log(JSON.stringify(subset, null, 2));
 }
