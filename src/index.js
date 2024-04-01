@@ -203,15 +203,23 @@ const toGraph = async () => {
 };
 
 async function main() {
+  // --------------------    Filter ncbi gene_info  -------------------------------- //
+  // Description: Only include biofactoid-relevant organism entries
+  // await filterFile();
+
   // --------------------      Create nameMap       -------------------------------- //
+  // Description: Create a Map where keys are gene names and values are
+  // [{ gene_id, tax_id },...]
   // const nameMap = await toNameMap();
   // await save(NAMES_MAP_PATH, nameMap);
 
   // --------------------      Create adjMatrix     -------------------------------- //
+  // Description: Create a adjacency matrix of intra- or inter-org name clashes
   // const graph = await toGraph();
   // await strSave(ADJ_CSV_FILE_PATH, graph.toCsv());
 
   // --------------------      Create clashMap      -------------------------------- //
+  // Description: Create a Map of names with intra- or inter-org clashes
   // const CLASH_MAP_FILE = 'clash_map.json';
   // const CLASH_MAP_PATH = path.join(RESULTS_DIR, CLASH_MAP_FILE);
   // const clashMap = new Map(
@@ -221,14 +229,14 @@ async function main() {
   // );
   // await save(CLASH_MAP_PATH, clashMap)
 
-  // --------------------  Create species clashMap  -------------------------------- //
+  // --------------------  Create orthologue clashMap  -------------------------------- //
+  // Description: Clash Map for specific organisms (non-synonym)
   // const nameMap = await load(NAMES_MAP_PATH);
-  // const HMR_CLASH_MAP_FILE = 'human_mouse_rat_clash_map.json';
-  // const HMR_CLASH_MAP_PATH = path.join(RESULTS_DIR, HMR_CLASH_MAP_FILE);
+  // const CLASH_MAP_FILE = 'drerio_dmelanogaster.json';
+  // const CLASH_MAP_PATH = path.join(RESULTS_DIR, CLASH_MAP_FILE);
   // const tax_ids = [
-  //   '9606',
-  //   '10090',
-  //   '10116'
+  //   '7955',
+  //   '7227'
   // ];
   // const clashMap = new Map(
   //   [...nameMap]
@@ -238,14 +246,14 @@ async function main() {
   //     })
   //     .sort((a, b) => b[1].length - a[1].length)
   // );
-  // await save(HMR_CLASH_MAP_PATH, clashMap);
+  // await save(CLASH_MAP_PATH, clashMap);
   // console.log(clashMap.size); //32 265
 
   // --------------------  Process the species clashMap  -------------------------- //
-  const clashMap = new Map([
-    ["hsp70",[{"gene_id":"820438","tax_id":"3702"},{"gene_id":"32133","tax_id":"7227"},{"gene_id":"39542","tax_id":"7227"},{"gene_id":"41609","tax_id":"7227"},{"gene_id":"41840","tax_id":"7227"},{"gene_id":"44920","tax_id":"7227"},{"gene_id":"44921","tax_id":"7227"},{"gene_id":"48581","tax_id":"7227"},{"gene_id":"48582","tax_id":"7227"},{"gene_id":"48583","tax_id":"7227"},{"gene_id":"50022","tax_id":"7227"},{"gene_id":"30671","tax_id":"7955"},{"gene_id":"387608","tax_id":"7955"},{"gene_id":"560210","tax_id":"7955"},{"gene_id":"100126123","tax_id":"7955"},{"gene_id":"3303","tax_id":"9606"},{"gene_id":"3308","tax_id":"9606"},{"gene_id":"15511","tax_id":"10090"},{"gene_id":"266759","tax_id":"10116"},{"gene_id":"108348108","tax_id":"10116"}]]
-  ])
-  let entries = clashMap.get('hsp70');
+  // const clashMap = new Map([
+  //   ["hsp70",[{"gene_id":"820438","tax_id":"3702"},{"gene_id":"32133","tax_id":"7227"},{"gene_id":"39542","tax_id":"7227"},{"gene_id":"41609","tax_id":"7227"},{"gene_id":"41840","tax_id":"7227"},{"gene_id":"44920","tax_id":"7227"},{"gene_id":"44921","tax_id":"7227"},{"gene_id":"48581","tax_id":"7227"},{"gene_id":"48582","tax_id":"7227"},{"gene_id":"48583","tax_id":"7227"},{"gene_id":"50022","tax_id":"7227"},{"gene_id":"30671","tax_id":"7955"},{"gene_id":"387608","tax_id":"7955"},{"gene_id":"560210","tax_id":"7955"},{"gene_id":"100126123","tax_id":"7955"},{"gene_id":"3303","tax_id":"9606"},{"gene_id":"3308","tax_id":"9606"},{"gene_id":"15511","tax_id":"10090"},{"gene_id":"266759","tax_id":"10116"},{"gene_id":"108348108","tax_id":"10116"}]]
+  // ])
+  // let entries = clashMap.get('hsp70');
   //"linkname": "gene_pubmed_highlycited"
   // let subset = [...clashMap].slice(0, 1);
   // console.log(JSON.stringify(subset, null, 2));
